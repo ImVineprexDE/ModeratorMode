@@ -52,7 +52,7 @@ Requires the permission `moderatormode.admin`.
 
 ## ⚙️ Installation
 
-1.  Download the latest `ModeratorMode-*.jar` from the [**Releases Page**](https://github.com/YourUsername/ModeratorMode-Minecraft/releases).
+1.  Download the latest `ModeratorMode-*.jar` from the [**Releases Page**](https://github.com/ImVineprexDE/ModeratorMode/releases).
 2.  Place the JAR file into your server's `/plugins` folder.
 3.  Restart your server. The default configuration file (`config.yml`) will be generated.
 4.  (Optional) Grant the `moderatormode.use` and `moderatormode.admin` permissions to your staff groups using a permissions plugin like [LuckPerms](https://luckperms.net/).
