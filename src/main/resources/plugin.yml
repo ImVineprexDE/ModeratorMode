@@ -1,0 +1,20 @@
+name: ModeratorMode
+version: 1.0
+main: com.imvineprexde.modmode.ModeratorMode
+api-version: 1.20
+authors: [ImVineprexDE]
+description: Enables a customizable moderator mode with item restrictions.
+commands:
+  modmode:
+    description: Toggles the moderator mode on or off.
+    usage: /<command>
+    aliases: [mm]
+    permission: moderatormode.use
+    permission-message: You do not have permission to use this command.
+permissions:
+  moderatormode.use:
+    description: Allows toggling the moderator mode.
+    default: op
+  moderatormode.admin:
+    description: Allows admin commands like add, remove, list, and reload.
+    default: op

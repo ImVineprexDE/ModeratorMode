@@ -1,0 +1,25 @@
+# Configuration for the ModeratorMode Plugin
+
+# A list of items to be given to the moderator in their hotbar.
+# You can manage this list with the in-game commands: /mm add, /mm remove, and /mm list.
+# Each item is saved with all its data (name, lore, enchantments, etc.).
+
+moderator-hotbar-items:
+
+  # WorldEdit Axe
+  - DataVersion: 4440
+    id: minecraft:wooden_axe
+    count: 1
+    components:
+      minecraft:custom_name: '{bold:1b,color:"#FF94D2",extra:[{bold:1b,color:"#FA88CA",italic:0b,text:"o"},{bold:1b,color:"#F67BC2",italic:0b,text:"r"},{bold:1b,color:"#F16FBB",italic:0b,text:"l"},{bold:1b,color:"#EC63B3",italic:0b,text:"d"},{bold:1b,color:"#E856AB",italic:0b,text:"E"},{bold:1b,color:"#E34AA3",italic:0b,text:"d"},{bold:1b,color:"#DE3E9B",italic:0b,text:"i"},{bold:1b,color:"#DA3193",italic:0b,text:"t"},{bold:1b,color:"#D5258C",italic:0b,text:"
+      "},{bold:1b,color:"#D01984",italic:0b,text:"A"},{bold:1b,color:"#CC0C7C",italic:0b,text:"x"},{bold:1b,color:"#C70074",italic:0b,text:"e"}],italic:0b,text:"W"}'
+    schema_version: 1
+
+  # Debug Stick
+  - DataVersion: 4440
+    id: minecraft:debug_stick
+    count: 1
+    components:
+      minecraft:custom_name: '{bold:1b,color:"#66FF85",extra:[{bold:1b,color:"#64FF8D",italic:0b,text:"e"},{bold:1b,color:"#62FE96",italic:0b,text:"b"},{bold:1b,color:"#5FFE9E",italic:0b,text:"u"},{bold:1b,color:"#5DFDA7",italic:0b,text:"g"},{bold:1b,color:"#5BFDAF",italic:0b,text:"
+      "},{bold:1b,color:"#59FDB7",italic:0b,text:"S"},{bold:1b,color:"#57FCC0",italic:0b,text:"t"},{bold:1b,color:"#54FCC8",italic:0b,text:"i"},{bold:1b,color:"#52FBD1",italic:0b,text:"c"},{bold:1b,color:"#50FBD9",italic:0b,text:"k"}],italic:0b,text:"D"}'
+    schema_version: 1
