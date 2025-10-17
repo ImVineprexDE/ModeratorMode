@@ -1,5 +1,9 @@
 package com.imvineprexde.modmode;
 
+// EssentialsX Import
+import com.earth2me.essentials.Essentials;
+
+// Standard Bukkit/Java Imports
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.kyori.adventure.text.Component;
@@ -16,6 +20,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -30,6 +35,12 @@ import java.util.*;
 
 public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener {
 
+    // Enum to manage which vanish provider is active
+    private enum VanishProvider {
+        ESSENTIALS,
+        BUKKIT_FALLBACK
+    }
+
     private final Map<UUID, PlayerData> playerStates = new HashMap<>();
     private final Gson gson = new GsonBuilder()
             .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
@@ -38,11 +49,16 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
     private File dataFolder;
     private List<ItemStack> moderatorHotbarItems;
 
+    // EssentialsX integration variable
+    private Essentials essentials = null;
+    private VanishProvider activeVanishProvider;
+
     @Override
     public void onEnable() {
-        getLogger().info("ModeratorMode v1.0 has been enabled!");
+        getLogger().info("ModeratorMode v1.1-Vanish has been enabled!");
         this.saveDefaultConfig();
         loadConfigValues();
+        setupVanishHook();
         this.dataFolder = new File(getDataFolder(), "playerdata");
         if (!this.dataFolder.exists()) this.dataFolder.mkdirs();
 
@@ -52,15 +68,42 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
 
     @Override
     public void onDisable() {
-        getLogger().info("ModeratorMode v1.0 has been disabled!");
+        getLogger().info("ModeratorMode v1.1-Vanish has been disabled!");
         for (UUID uuid : new ArrayList<>(playerStates.keySet())) {
             Player player = getServer().getPlayer(uuid);
             if (player != null) {
-                restorePlayerState(player);
                 player.sendMessage(ChatColor.RED + "You were removed from moderator mode because the plugin was disabled.");
+                restorePlayerState(player);
             }
         }
         playerStates.clear();
+    }
+
+    private void setupVanishHook() {
+        Plugin essentialsPlugin = getServer().getPluginManager().getPlugin("Essentials");
+        if (essentialsPlugin instanceof Essentials) {
+            this.essentials = (Essentials) essentialsPlugin;
+            this.activeVanishProvider = VanishProvider.ESSENTIALS;
+            getLogger().info("Successfully hooked into EssentialsX for vanish support.");
+        } else {
+            this.activeVanishProvider = VanishProvider.BUKKIT_FALLBACK;
+            getLogger().warning("EssentialsX not found. Falling back to basic player hiding.");
+        }
+    }
+
+    private void setVanished(Player player, boolean vanished) {
+        if (essentials != null) {
+            essentials.getUser(player.getUniqueId()).setVanished(vanished);
+        } else {
+            // Fallback to the simple Bukkit method
+            if (vanished) {
+                getServer().getOnlinePlayers().forEach(onlinePlayer -> {
+                    if (!onlinePlayer.equals(player)) onlinePlayer.hidePlayer(this, player);
+                });
+            } else {
+                getServer().getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(this, player));
+            }
+        }
     }
 
     private void loadConfigValues() {
@@ -158,21 +201,17 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
 
     private void toggleModeratorMode(Player player) {
         if (playerStates.containsKey(player.getUniqueId()) || new File(dataFolder, player.getUniqueId() + ".json").exists()) {
-            restorePlayerState(player);
             player.sendMessage(ChatColor.GREEN + "You have left moderator mode!");
+            restorePlayerState(player);
         } else {
+            player.sendMessage(ChatColor.GREEN + "You have entered moderator mode!");
             savePlayerState(player);
             applyModeratorMode(player);
-            player.sendMessage(ChatColor.GREEN + "You have entered moderator mode!");
         }
     }
 
     private void applyModeratorMode(Player player) {
-        // Using the simple Bukkit-based player hiding
-        getServer().getOnlinePlayers().forEach(onlinePlayer -> {
-            if (!onlinePlayer.equals(player)) onlinePlayer.hidePlayer(this, player);
-        });
-
+        setVanished(player, true);
         player.setGameMode(GameMode.CREATIVE);
         player.setHealth(20.0);
         player.setFoodLevel(20);
@@ -185,6 +224,16 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, true, false));
         for (ItemStack item : moderatorHotbarItems) {
             player.getInventory().addItem(item.clone());
+        }
+
+        switch (activeVanishProvider) {
+            case ESSENTIALS:
+                player.sendMessage(ChatColor.GRAY + "Vanished using EssentialsX.");
+                break;
+            case BUKKIT_FALLBACK:
+            default:
+                player.sendMessage(ChatColor.GRAY + "Vanished using built-in hiding feature.");
+                break;
         }
     }
 
@@ -205,9 +254,7 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
     }
 
     private void restorePlayerState(Player player) {
-        // Using the simple Bukkit-based player showing
-        getServer().getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(this, player));
-
+        setVanished(player, false);
         PlayerData data = playerStates.remove(player.getUniqueId());
         File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
         if (data == null) {
@@ -241,6 +288,8 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         if (playerFile.exists()) {
             playerFile.delete();
         }
+
+        player.sendMessage(ChatColor.GRAY + "You are no longer vanished.");
     }
 
     private void handleAddItemCommand(Player player) {

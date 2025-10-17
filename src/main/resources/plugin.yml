@@ -1,9 +1,9 @@
 name: ModeratorMode
-version: 1.0
+version: 1.1-Vanish
 main: com.imvineprexde.modmode.ModeratorMode
 api-version: 1.20
 authors: [ImVineprexDE]
-description: Enables a customizable moderator mode with item restrictions.
+description: Enables a customizable moderator mode with item restrictions and vanish integration.
 commands:
   modmode:
     description: Toggles the moderator mode on or off.
@@ -18,3 +18,4 @@ permissions:
   moderatormode.admin:
     description: Allows admin commands like add, remove, list, and reload.
     default: op
+softdepend: [Essentials]

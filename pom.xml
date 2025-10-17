@@ -6,7 +6,7 @@
 
     <groupId>com.imvineprexde.modmode</groupId>
     <artifactId>ModeratorMode</artifactId>
-    <version>1.0</version>
+    <version>1.1-EssentialsXVanishSupport</version>
     <packaging>jar</packaging>
 
     <name>ModeratorMode</name>
@@ -45,17 +45,6 @@
                                     <shadedPattern>com.imvineprexde.modmode.libs.gson</shadedPattern>
                                 </relocation>
                             </relocations>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                        <exclude>META-INF/MANIFEST.MF</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
                         </configuration>
                     </execution>
                 </executions>
@@ -74,23 +63,39 @@
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <!-- HIER IST DIE KORREKTUR: Das Releases-Repository -->
+        <repository>
+            <id>essentialsx-releases</id>
+            <url>https://repo.essentialsx.net/releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
-        <!-- Paper API Dependency -->
+        <!-- Core Dependencies -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.20.1-R0.1-SNAPSHOT</version> <!-- IMPORTANT: Adjust this version to your server version! -->
+            <version>1.20.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- Gson Dependency (for saving/loading JSON) -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
             <scope>compile</scope>
+        </dependency>
+
+        <!-- SOFT DEPENDENCY: EssentialsX API -->
+        <dependency>
+            <groupId>net.essentialsx</groupId>
+            <artifactId>EssentialsX</artifactId>
+            <version>2.21.2</version> <!-- Stabile Version -->
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
