@@ -6,7 +6,7 @@
 
     <groupId>com.imvineprexde.modmode</groupId>
     <artifactId>ModeratorMode</artifactId>
-    <version>1.1-EssentialsXVanishSupport</version>
+    <version>1.2-MultiVanishSupport</version>
     <packaging>jar</packaging>
 
     <name>ModeratorMode</name>
@@ -45,6 +45,16 @@
                                     <shadedPattern>com.imvineprexde.modmode.libs.gson</shadedPattern>
                                 </relocation>
                             </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>com.google.code.gson:gson</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>META-INF/versions/**</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
@@ -67,10 +77,15 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
-        <!-- HIER IST DIE KORREKTUR: Das Releases-Repository -->
+        <!-- EssentialsX Repository -->
         <repository>
             <id>essentialsx-releases</id>
             <url>https://repo.essentialsx.net/releases/</url>
+        </repository>
+        <!-- Jitpack for SuperVanish (Open Source!) -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
     </repositories>
 
@@ -89,11 +104,20 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- SOFT DEPENDENCY: SuperVanish API -->
+        <dependency>
+            <groupId>com.github.LeonMangler</groupId>
+            <artifactId>SuperVanish</artifactId>
+            <version>6.2.21</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- SOFT DEPENDENCY: EssentialsX API -->
         <dependency>
             <groupId>net.essentialsx</groupId>
             <artifactId>EssentialsX</artifactId>
-            <version>2.21.2</version> <!-- Stabile Version -->
+            <version>2.21.2</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
