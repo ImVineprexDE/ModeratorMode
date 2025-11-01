@@ -1,6 +1,6 @@
 # ModeratorMode for Minecraft
 
-[![Version](https://img.shields.io/badge/Version-1.0-blue.svg)](https://github.com/YourUsername/ModeratorMode-Minecraft/releases)
+[![Version](https://img.shields.io/badge/Version-1.2.2-blue.svg)](https://github.com/ImVineprexDE/ModeratorMode/releases)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/ImVineprexDE/ModeratorMode.svg)](https://GitHub.com/ImVineprexDE/ModeratorMode/issues/)
 
