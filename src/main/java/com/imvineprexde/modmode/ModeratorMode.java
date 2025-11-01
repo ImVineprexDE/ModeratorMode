@@ -70,7 +70,7 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
 
     @Override
     public void onEnable() {
-        getLogger().info("ModeratorMode v1.2.1 has been enabled!"); // Version hier auch angepasst
+        getLogger().info("ModeratorMode v1.2.2 has been enabled!");
         this.saveDefaultConfig();
         loadConfigValues();
         setupVanishHook();
@@ -83,7 +83,7 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
 
     @Override
     public void onDisable() {
-        getLogger().info("ModeratorMode v1.2.1 has been disabled!"); // Version hier auch angepasst
+        getLogger().info("ModeratorMode v1.2.2 has been disabled!");
         for (UUID uuid : new ArrayList<>(playerStates.keySet())) {
             Player player = getServer().getPlayer(uuid);
             if (player != null) {
@@ -407,6 +407,7 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         setVanished(player, false);
         PlayerData data = playerStates.remove(player.getUniqueId());
         File playerFile = new File(dataFolder, player.getUniqueId() + ".json");
+
         if (data == null) {
             if (playerFile.exists()) {
                 try (FileReader reader = new FileReader(playerFile)) {
@@ -419,22 +420,39 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
                 }
             } else {
                 player.sendMessage(ChatColor.RED + "Error: No saved data was found.");
+                // Fallback: Put the player in a safe default state if no data is found
+                player.setGameMode(GameMode.SURVIVAL);
+                player.getInventory().clear();
+                player.getInventory().setArmorContents(new ItemStack[4]);
                 return;
             }
         }
 
-        player.teleport(data.getLocation());
-        player.setGameMode(data.getGameMode());
-        player.setHealth(data.getHealth());
-        player.setFoodLevel(data.getFoodLevel());
-        player.setExp(data.getExp());
-        player.setLevel(data.getLevel());
-        player.getInventory().clear();
-        player.getInventory().setContents(data.getInventoryContents());
-        player.getInventory().setArmorContents(data.getArmorContents());
-        // KORREKTUR HIER: Iteriere über eine Kopie der Liste, um ConcurrentModificationException zu vermeiden
-        new ArrayList<>(player.getActivePotionEffects()).forEach(effect -> player.removePotionEffect(effect.getType()));
-        data.getStoredPotionEffects().forEach(player::addPotionEffect);
+        // IMPORTANT CHANGE: Use the Bukkit Scheduler to delay the restoration by 1 tick
+        final PlayerData finalData = data; // Make data "effectively final" for use in the lambda
+        getServer().getScheduler().runTask(this, () -> {
+            player.teleport(finalData.getLocation());
+            player.setGameMode(finalData.getGameMode());
+            player.setHealth(finalData.getHealth());
+            player.setFoodLevel(finalData.getFoodLevel());
+            player.setExp(finalData.getExp());
+            player.setLevel(finalData.getLevel());
+
+            // First, clear the inventory completely to ensure it's a clean slate
+            player.getInventory().clear();
+
+            // Then, set the inventory contents and armor
+            player.getInventory().setContents(finalData.getInventoryContents());
+            player.getInventory().setArmorContents(finalData.getArmorContents());
+
+            // Restore potion effects
+            new ArrayList<>(player.getActivePotionEffects()).forEach(effect -> player.removePotionEffect(effect.getType()));
+            finalData.getStoredPotionEffects().forEach(player::addPotionEffect);
+
+            // Explicitly update the player's inventory to ensure the client receives the changes
+            player.updateInventory();
+        });
+
 
         if (playerFile.exists()) {
             if (!playerFile.delete()) {
