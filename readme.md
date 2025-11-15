@@ -5,7 +5,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/ImVineprexDE/ModeratorMode.svg)](https://GitHub.com/ImVineprexDE/ModeratorMode/issues/)
 [![CodeFactor](https://www.codefactor.io/repository/github/imvineprexde/moderatormode/badge)](https://www.codefactor.io/repository/github/imvineprexde/moderatormode)
 
-### **Supported MC Versions:** `1.20.x` `1.21.x`
+### **Supported MC Versions:** `1.20.5+` `1.21.x`
 
 A powerful and fully customizable moderator mode for PaperMC servers, designed to streamline your staff's workflow without interrupting their gameplay. Now with comprehensive logging and player inspection capabilities!
 
