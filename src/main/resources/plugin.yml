@@ -1,9 +1,9 @@
 name: ModeratorMode
-version: 1.2.2
+version: 1.3.0
 main: com.imvineprexde.modmode.ModeratorMode
 api-version: 1.20
 authors: [ImVineprexDE]
-description: Enables a customizable moderator mode with multi-vanish plugin support (SuperVanish, EssentialsX, CMI).
+description: Enables a customizable moderator mode with multi-vanish plugin support (SuperVanish, EssentialsX, CMI) and player inspection.
 commands:
   modmode:
     description: Toggles the moderator mode on or off.
@@ -15,7 +15,18 @@ permissions:
   moderatormode.use:
     description: Allows toggling the moderator mode.
     default: op
+
   moderatormode.admin:
     description: Allows admin commands like add, remove, list, and reload.
     default: op
+
+  # ➕ NEW: Inspection permissions
+  moderatormode.inspect:
+    description: Allows inspecting players in mod mode
+    default: op
+
+  moderatormode.inspect.ip:
+    description: Allows viewing player IP addresses
+    default: op
+
 softdepend: [SuperVanish, PremiumVanish, Essentials, CMI]

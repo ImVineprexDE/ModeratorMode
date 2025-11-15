@@ -1,13 +1,13 @@
 # ModeratorMode for Minecraft
 
-[![Version](https://img.shields.io/badge/Version-1.2.2-blue.svg)](https://github.com/ImVineprexDE/ModeratorMode/releases)
+[![Version](https://img.shields.io/badge/Version-1.3.0-blue.svg)](https://github.com/ImVineprexDE/ModeratorMode/releases)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/ImVineprexDE/ModeratorMode.svg)](https://GitHub.com/ImVineprexDE/ModeratorMode/issues/)
 [![CodeFactor](https://www.codefactor.io/repository/github/imvineprexde/moderatormode/badge)](https://www.codefactor.io/repository/github/imvineprexde/moderatormode)
 
 ### **Supported MC Versions:** `1.20.x` `1.21.x`
 
-A powerful and fully customizable moderator mode for PaperMC servers, designed to streamline your staff's workflow without interrupting their gameplay.
+A powerful and fully customizable moderator mode for PaperMC servers, designed to streamline your staff's workflow without interrupting their gameplay. Now with comprehensive logging and player inspection capabilities!
 
 ---
 
@@ -21,15 +21,17 @@ This plugin is built to be robust, lightweight, and fully manageable from in-gam
 
 ## ✨ Features
 
--   **Seamless State Saving:** Toggling moderator mode (`/mm`) instantly saves a player's location, inventory, gamemode, health, food level, experience, and potion effects.
--   **Crash-Proof Persistence:** Player data is saved to a local JSON file, ensuring that even if the server crashes, a moderator's inventory and state are never lost.
--   **Fully Configurable Hotbar:** Admins can define a custom set of items that moderators receive upon entering the mode. Add special tools, compasses, or custom items from other plugins directly from in-game!
--   **Built-in Moderator Tools:**
-    -   **Simple Vanish:** Automatically hides moderators from regular players using the reliable built-in Bukkit method.
-    -   **Permanent Night Vision:** Grants infinite night vision to ensure moderators can see everything clearly, day or night.
-    -   **Item Drop Protection:** Prevents moderators from accidentally dropping their configured tools.
--   **Easy In-Game Management:** All hotbar items can be managed via simple admin commands. No need to manually edit YAML files after the initial setup.
--   **Lightweight & No Dependencies:** Built to be efficient and stable with no external plugin dependencies required for core functionality.
+- **Seamless State Saving:** Toggling moderator mode (`/mm`) instantly saves a player's location, inventory, gamemode, health, food level, experience, and potion effects.
+- **Crash-Proof Persistence:** Player data is saved to a local JSON file, ensuring that even if the server crashes, a moderator's inventory and state are never lost.
+- **Fully Configurable Hotbar:** Admins can define a custom set of items that moderators receive upon entering the mode. Add special tools, compasses, or custom items from other plugins directly from in-game!
+- **Player Inspection System:** Right-click any player while in moderator mode to view their inventory, ender chest, statistics, and active potion effects in real-time—all in secure, read-only GUIs.
+- **Comprehensive Logging:** All moderation actions are automatically logged to JSON files with timestamps, including mode entries/exits, player inspections, and hotbar modifications.
+- **Built-in Moderator Tools:**
+    - **Simple Vanish:** Automatically hides moderators from regular players using the reliable built-in Bukkit method.
+    - **Permanent Night Vision:** Grants infinite night vision to ensure moderators can see everything clearly, day or night.
+    - **Item Drop Protection:** Prevents moderators from accidentally dropping their configured tools.
+- **Easy In-Game Management:** All hotbar items can be managed via simple admin commands. No need to manually edit YAML files after the initial setup.
+- **Lightweight & No Dependencies:** Built to be efficient and stable with no external plugin dependencies required for core functionality.
 
 ---
 
@@ -51,14 +53,30 @@ Requires the permission `moderatormode.admin`.
 | `/modmode remove <number>` | Removes an item from the list by its number (from `/mm list`). |
 | `/modmode reload` | Reloads the plugin's configuration file from disk. |
 
+### Inspection (ModeratorMode Feature)
+Requires the permission `moderatormode.inspect`
+
+| Action | Description |
+| :--- | :--- |
+| **Right-click player** | Opens inspection GUI while in moderator mode. |
+
+### Permission Nodes
+| Permission | Description |
+| :--- | :--- |
+| `moderatormode.use` | Allows toggling the moderator mode. |
+| `moderatormode.admin` | Allows managing hotbar items and reloading config. |
+| `moderatormode.inspect` | Allows inspecting players in moderation mode. |
+| `moderatormode.inspect.ip` | Allows copying player IP addresses in inspection. |
+| `moderatormode.seevanished` | Allows seeing vanished moderators (bypasses vanish). |
 ---
 
 ## ⚙️ Installation
 
 1.  Download the latest `ModeratorMode-*.jar` from the [**Releases Page**](https://github.com/ImVineprexDE/ModeratorMode/releases).
 2.  Place the JAR file into your server's `/plugins` folder.
-3.  Restart your server. The default configuration file (`config.yml`) will be generated.
-4.  (Optional) Grant the `moderatormode.use` and `moderatormode.admin` permissions to your staff groups using a permissions plugin like [LuckPerms](https://luckperms.net/).
+3.  Restart your server. The default configuration file (`config.yml`) and logs directory will be generated automatically.
+4.  (Optional) Grant the necessary permissions to your staff groups using a permissions plugin like [LuckPerms](https://luckperms.net/).
+5.  Review the `config.yml` to customize hotbar items and logging settings.
 
 That's it! Your staff can now use `/mm` to moderate more effectively.
 
@@ -66,6 +84,10 @@ That's it! Your staff can now use `/mm` to moderate more effectively.
 
 ## 🛠️ Building from Source
 
-If you wish to build the plugin from the source code, you will need:
+If you wish to build this enhanced version from source code, you will need:
 -   Java 17 or higher
 -   Apache Maven
+
+Clone the repository and run:
+```bash
+mvn clean package

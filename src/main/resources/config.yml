@@ -23,3 +23,20 @@ moderator-hotbar-items:
       minecraft:custom_name: '{bold:1b,color:"#66FF85",extra:[{bold:1b,color:"#64FF8D",italic:0b,text:"e"},{bold:1b,color:"#62FE96",italic:0b,text:"b"},{bold:1b,color:"#5FFE9E",italic:0b,text:"u"},{bold:1b,color:"#5DFDA7",italic:0b,text:"g"},{bold:1b,color:"#5BFDAF",italic:0b,text:"
       "},{bold:1b,color:"#59FDB7",italic:0b,text:"S"},{bold:1b,color:"#57FCC0",italic:0b,text:"t"},{bold:1b,color:"#54FCC8",italic:0b,text:"i"},{bold:1b,color:"#52FBD1",italic:0b,text:"c"},{bold:1b,color:"#50FBD9",italic:0b,text:"k"}],italic:0b,text:"D"}'
     schema_version: 1
+
+# ➕ NEW: Logging configuration
+logging:
+  enabled: true
+  log-directory: "plugins/ModeratorMode/logs"
+  retention-days: 30
+  log-inspections: true
+  log-hotbar-changes: true
+
+# ➕ NEW: Inspection settings
+inspection:
+  require-permission: true
+  allow-enderchest: true
+  show-ip-address: false
+  # Whether IP copying is enabled at all
+  # Set to true to show IPs (requires modmode.inspect.ip permission)
+  # Right-click player head in inspection GUI to copy to clipboard

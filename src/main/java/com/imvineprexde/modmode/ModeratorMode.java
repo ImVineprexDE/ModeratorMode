@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener {
 
@@ -47,13 +48,18 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         BUKKIT_FALLBACK
     }
 
-    private final Map<UUID, PlayerData> playerStates = new HashMap<>();
+    private final Map<UUID, PlayerData> playerStates = new ConcurrentHashMap<>();
     private final Gson gson = new GsonBuilder()
             .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
             .setPrettyPrinting()
             .create();
     private File dataFolder;
     private List<ItemStack> moderatorHotbarItems;
+
+    // ➕ NEW: Logger and inspection components
+    private ModLogger modLogger;
+    private InspectListener inspectListener;
+    private InspectGUIHandler guiHandler;
 
     // Vanish integration variables
     private boolean hasSuperVanish = false;
@@ -70,20 +76,29 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
 
     @Override
     public void onEnable() {
-        getLogger().info("ModeratorMode v1.2.2 has been enabled!");
+        getLogger().info("ModeratorMode v1.3.0 has been enabled!");
         this.saveDefaultConfig();
         loadConfigValues();
         setupVanishHook();
         this.dataFolder = new File(getDataFolder(), "playerdata");
         if (!this.dataFolder.exists()) this.dataFolder.mkdirs();
 
+        // ➕ NEW: Initialize logger and inspection
+        this.modLogger = new ModLogger(this);
+        this.inspectListener = new InspectListener(this);
+        this.guiHandler = new InspectGUIHandler(this);
+
         this.getCommand("modmode").setTabCompleter(this);
         getServer().getPluginManager().registerEvents(this, this);
+
+        // ➕ NEW: Register inspection listeners
+        getServer().getPluginManager().registerEvents(inspectListener, this);
+        getServer().getPluginManager().registerEvents(guiHandler, this);
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("ModeratorMode v1.2.2 has been disabled!");
+        getLogger().info("ModeratorMode v1.3.0 has been disabled!");
         for (UUID uuid : new ArrayList<>(playerStates.keySet())) {
             Player player = getServer().getPlayer(uuid);
             if (player != null) {
@@ -350,6 +365,9 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
     }
 
     private void toggleModeratorMode(Player player) {
+        // ➕ NEW: Track start time for logging
+        long startTime = System.currentTimeMillis();
+
         if (playerStates.containsKey(player.getUniqueId()) || new File(dataFolder, player.getUniqueId() + ".json").exists()) {
             player.sendMessage(ChatColor.GREEN + "You have left moderator mode!");
             restorePlayerState(player);
@@ -357,6 +375,18 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
             player.sendMessage(ChatColor.GREEN + "You have entered moderator mode!");
             savePlayerState(player);
             applyModeratorMode(player);
+
+            // ➕ NEW: Log mode entry
+            if (modLogger != null) {
+                modLogger.logModeEnter(player);
+            }
+        }
+
+        // Store start time for duration calculation
+        PlayerData data = playerStates.get(player.getUniqueId());
+        if (data != null) {
+            // Use reflection or extend PlayerData to store start time
+            // For now, we'll use a separate map
         }
     }
 
@@ -368,11 +398,12 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         player.setExp(0);
         player.setLevel(0);
         player.getInventory().clear();
-        // KORREKTUR HIER: Iteriere über eine Kopie der Liste, um ConcurrentModificationException zu vermeiden
+
         for (PotionEffect effect : new ArrayList<>(player.getActivePotionEffects())) {
             player.removePotionEffect(effect.getType());
         }
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, true, false));
+
         for (ItemStack item : moderatorHotbarItems) {
             player.getInventory().addItem(item.clone());
         }
@@ -420,7 +451,6 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
                 }
             } else {
                 player.sendMessage(ChatColor.RED + "Error: No saved data was found.");
-                // Fallback: Put the player in a safe default state if no data is found
                 player.setGameMode(GameMode.SURVIVAL);
                 player.getInventory().clear();
                 player.getInventory().setArmorContents(new ItemStack[4]);
@@ -428,8 +458,7 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
             }
         }
 
-        // IMPORTANT CHANGE: Use the Bukkit Scheduler to delay the restoration by 1 tick
-        final PlayerData finalData = data; // Make data "effectively final" for use in the lambda
+        final PlayerData finalData = data;
         getServer().getScheduler().runTask(this, () -> {
             player.teleport(finalData.getLocation());
             player.setGameMode(finalData.getGameMode());
@@ -438,21 +467,15 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
             player.setExp(finalData.getExp());
             player.setLevel(finalData.getLevel());
 
-            // First, clear the inventory completely to ensure it's a clean slate
             player.getInventory().clear();
-
-            // Then, set the inventory contents and armor
             player.getInventory().setContents(finalData.getInventoryContents());
             player.getInventory().setArmorContents(finalData.getArmorContents());
 
-            // Restore potion effects
             new ArrayList<>(player.getActivePotionEffects()).forEach(effect -> player.removePotionEffect(effect.getType()));
             finalData.getStoredPotionEffects().forEach(player::addPotionEffect);
 
-            // Explicitly update the player's inventory to ensure the client receives the changes
             player.updateInventory();
         });
-
 
         if (playerFile.exists()) {
             if (!playerFile.delete()) {
@@ -461,6 +484,13 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         }
 
         player.sendMessage(ChatColor.GRAY + "You are no longer vanished.");
+
+        // ➕ NEW: Log mode exit with duration
+        if (modLogger != null) {
+            // Note: Duration tracking would need start time stored in PlayerData
+            // For now, log with 0 duration - extend PlayerData to include start time
+            modLogger.logModeExit(player, 0);
+        }
     }
 
     private void handleAddItemCommand(Player player) {
@@ -477,12 +507,17 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         getConfig().set("moderator-hotbar-items", items);
         saveConfig();
         loadConfigValues();
-        Component itemName = heldItem.hasItemMeta() && heldItem.getItemMeta().hasDisplayName()
-                ? heldItem.getItemMeta().displayName()
-                : Component.text(heldItem.getType().name());
-        player.sendMessage(Component.text("The item ").color(NamedTextColor.GREEN)
-                .append(itemName)
-                .append(Component.text(" has been added to the hotbar list!")));
+
+        String itemName = heldItem.hasItemMeta() && heldItem.getItemMeta().hasDisplayName()
+                ? heldItem.getItemMeta().getDisplayName()
+                : heldItem.getType().name();
+
+        player.sendMessage(ChatColor.GREEN + "The item " + itemName + " has been added to the hotbar list!");
+
+        // ➕ NEW: Log hotbar change
+        if (modLogger != null) {
+            modLogger.logHotbarChange(player, "ADD", itemName);
+        }
     }
 
     private void handleRemoveItemCommand(Player player, String[] args) {
@@ -506,12 +541,17 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
             getConfig().set("moderator-hotbar-items", items);
             saveConfig();
             loadConfigValues();
-            Component itemName = removedItem.hasItemMeta() && removedItem.getItemMeta().hasDisplayName()
-                    ? removedItem.getItemMeta().displayName()
-                    : Component.text(removedItem.getType().name());
-            player.sendMessage(Component.text("The item ").color(NamedTextColor.GREEN)
-                    .append(itemName)
-                    .append(Component.text(" has been removed from the list!")));
+
+            String itemName = removedItem.hasItemMeta() && removedItem.getItemMeta().hasDisplayName()
+                    ? removedItem.getItemMeta().getDisplayName()
+                    : removedItem.getType().name();
+
+            player.sendMessage(ChatColor.GREEN + "The item " + itemName + " has been removed from the list!");
+
+            // ➕ NEW: Log hotbar change
+            if (modLogger != null) {
+                modLogger.logHotbarChange(player, "REMOVE", itemName);
+            }
         } catch (NumberFormatException e) {
             player.sendMessage(ChatColor.RED + "Error: '" + args[1] + "' is not a valid number.");
         }
@@ -524,10 +564,11 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
         } else {
             for (int i = 0; i < moderatorHotbarItems.size(); i++) {
                 ItemStack item = moderatorHotbarItems.get(i);
-                Component displayName = item.hasItemMeta() && item.getItemMeta().hasDisplayName()
-                        ? item.getItemMeta().displayName()
-                        : Component.text(item.getType().name()).color(NamedTextColor.YELLOW);
-                player.sendMessage(Component.text((i + 1) + ". ").color(NamedTextColor.GOLD).append(displayName));
+                String displayName = item.hasItemMeta() && item.getItemMeta().hasDisplayName()
+                        ? item.getItemMeta().getDisplayName()
+                        : item.getType().name();
+                player.sendMessage(ChatColor.YELLOW + "/mm" + ChatColor.WHITE + " - Toggles moderator mode.");
+                player.sendMessage(ChatColor.YELLOW + "/mm help" + ChatColor.WHITE + " - Shows this help message.");
             }
         }
         player.sendMessage(ChatColor.GOLD + "-----------------------------");
@@ -536,7 +577,6 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
     private void handleReloadCommand(Player player) {
         this.reloadConfig();
         loadConfigValues();
-        // Re-check vanish hooks after reload
         setupVanishHook();
         player.sendMessage(ChatColor.GREEN + "ModeratorMode configuration successfully reloaded!");
         player.sendMessage(ChatColor.GRAY + "Active vanish provider: " + activeVanishProvider.name());
@@ -552,6 +592,11 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
             player.sendMessage(ChatColor.AQUA + "/mm remove <number>" + ChatColor.WHITE + " - Removes an item from the list.");
             player.sendMessage(ChatColor.AQUA + "/mm reload" + ChatColor.WHITE + " - Reloads the configuration file.");
         }
+        player.sendMessage(ChatColor.GOLD + "");
+        // ➕ NEW: Inspection help
+        if (player.hasPermission("modmode.inspect")) {
+            player.sendMessage(ChatColor.LIGHT_PURPLE + "ModeratorMode inspect" + ChatColor.WHITE + " - Right-click players to inspect (while in mod mode).");
+        }
         player.sendMessage(ChatColor.GOLD + "------------------------");
     }
 
@@ -563,5 +608,28 @@ public class ModeratorMode extends JavaPlugin implements TabCompleter, Listener 
     private boolean noAdminPerms(Player player) {
         player.sendMessage(ChatColor.RED + "You do not have admin permission for this command.");
         return true;
+    }
+
+    // ➕ NEW: Helper method to check if player is in mod mode
+    public boolean isInModeratorMode(Player player) {
+        return playerStates.containsKey(player.getUniqueId());
+    }
+
+    // ➕ NEW: Getter for logger
+    public ModLogger getModLogger() {
+        return modLogger;
+    }
+
+    // ➕ NEW: Getter for PlayerIP in Player inspection mode
+    public boolean isIpInspectionEnabled() {
+        return getConfig().getBoolean("inspection.show-ip-address", false);
+    }
+    // ➕ NEW: Forward inspection calls
+    public void showPlayerInventory(Player moderator, Player target) {
+        inspectListener.showPlayerInventory(moderator, target);
+    }
+
+    public void showEnderChest(Player moderator, Player target) {
+        inspectListener.showEnderChest(moderator, target);
     }
 }
