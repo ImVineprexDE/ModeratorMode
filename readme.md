@@ -91,7 +91,7 @@ If you wish to build this enhanced version from source code, you will need:
 Clone the repository and run:
 ```bash
 mvn clean package
-
+```
 
 ## ⚠️ AI-Generated Code Disclaimer
 
