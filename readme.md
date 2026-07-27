@@ -91,3 +91,14 @@ If you wish to build this enhanced version from source code, you will need:
 Clone the repository and run:
 ```bash
 mvn clean package
+
+
+## ⚠️ AI-Generated Code Disclaimer
+
+This plugin was developed with substantial assistance from AI tools (e.g., LLMs). While functional, portions of the codebase have **not been fully audited by a human** for correctness, security, or reliability. Some features may not work as expected.
+
+**Use at your own risk.** If you plan to use this in production or for anything critical, please:
+- Review the code yourself before relying on it
+- Test thoroughly in your own environment
+
+**This plugin is no longer actively developed.** Anyone is free to fork this repository, take the concept, and build their own version — no permission needed.
